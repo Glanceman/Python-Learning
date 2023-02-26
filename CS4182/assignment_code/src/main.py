@@ -5,7 +5,8 @@ from OpenGL.GLU import *
 import math, time, random, csv, datetime
 import ImportObject
 import PIL.Image as Image
-import jeep, cone
+import jeep, cone,star
+from tools import *
 
 windowSize = 600
 helpWindow = False
@@ -143,7 +144,7 @@ def staticObjects():
 def display():
     global jeepObj, canStart, score, beginTime, countTime
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-
+    ### default applyLight ==false
     if (applyLighting == True):
         glPushMatrix()
         glLoadIdentity()
@@ -338,6 +339,10 @@ def addCone(x,z):
     allcones.append(cone.cone(x,z))
     obstacleCoord.append((x,z))
 
+def addStar(x,z):
+    allstars.append(star.star(x,z))
+    rewardCoord.append((x,z))
+
 def collisionCheck():
     global overReason, score, usedDiamond, countTime
     for obstacle in obstacleCoord:
@@ -508,6 +513,8 @@ def main():
 
     # things to do
     # add stars
+    for i in range(starAmount):
+        addStar(random.randint(-land, land), random.randint(10.0, land*gameEnlarge))
 
     for cone in allcones:
         cone.makeDisplayLists()

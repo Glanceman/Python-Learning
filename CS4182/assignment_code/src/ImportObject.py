@@ -324,7 +324,7 @@ class ImportedObject:
                     ## load texture file info
                     elif vals[0] == "map_Kd":
                         ## record the texture file name
-                        fileName = vals[1]                        
+                        fileName = vals[1]                       
                         self.materials[-1][5]=(self.loadTexture(fileName))                        
                         self.hasTex = True
                         
