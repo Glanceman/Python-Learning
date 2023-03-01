@@ -28,10 +28,14 @@ class MyWnd:
         glEnable(GL_LIGHT0)
         return
     def read_texture(self,filename):
+        #load image
         img = Image.open(filename)
         img_data = numpy.array(list(img.getdata()), numpy.int8)
+        #generate a texture ID
         texture_id = glGenTextures(1)
+        #Bind texture to GL_Texture_2d and subsequence operation will based on it(GL_Texture_2d)
         glBindTexture(GL_TEXTURE_2D, texture_id) 
+        #Set texture params
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1)
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP)
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP)
@@ -40,6 +44,7 @@ class MyWnd:
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
         glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL)
+        #Load texture data
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, img.size[0], img.size[1], 0,
                     GL_RGB, GL_UNSIGNED_BYTE, img_data)
         return texture_id
@@ -51,6 +56,7 @@ class MyWnd:
         self.lightning()
         glutDisplayFunc(self.draw_sphere)
         self.texture_id = self.read_texture('./world_map.jpg')
+        self.texture_id2= self.read_texture('./diamondGeo.jpg')
         glMatrixMode(GL_PROJECTION)
         gluPerspective(40, 1, 1, 40)
         glutMainLoop()
@@ -62,9 +68,9 @@ class MyWnd:
         self.angle = self.angle+0.0004
         glEnable(GL_DEPTH_TEST)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-
+        #enable texturing 
         glEnable(GL_TEXTURE_2D)
-
+        glBindTexture(GL_TEXTURE_2D,self.texture_id2)#select which texture to use
         qobj = gluNewQuadric()
 
         # automatically calculate the texture

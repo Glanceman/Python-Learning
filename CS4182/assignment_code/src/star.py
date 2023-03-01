@@ -26,7 +26,7 @@ class star:
         
     def makeDisplayLists(self):
         self.obj.loadOBJ()
-
+        # set execute function for drawing inside the list
         self.displayList = glGenLists(1)
         glNewList(self.displayList, GL_COMPILE)
         self.obj.drawObject()
