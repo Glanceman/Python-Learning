@@ -23,6 +23,7 @@ class star:
         self.obj = ImportObject.ImportedObject("../objects/star")
         self.posX = x
         self.posZ = z
+        self.posY = 2
         
     def makeDisplayLists(self):
         self.obj.loadOBJ()
