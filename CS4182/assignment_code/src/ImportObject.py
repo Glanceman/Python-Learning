@@ -3,7 +3,7 @@ import OpenGL.GLUT as GLUT
 import OpenGL.GLU as GLU
 ## Avoid conflict with Python open
 from PIL.Image import open as imageOpen
-
+import os
 ## This class is used to create an object from geometry and materials
 ##  saved to a file in WaveFront object format.  The object exported
 ##  from Blender must have the normals included.  
@@ -324,8 +324,13 @@ class ImportedObject:
                     ## load texture file info
                     elif vals[0] == "map_Kd":
                         ## record the texture file name
-                        fileName = vals[1]                        
-                        self.materials[-1][5]=(self.loadTexture(fileName))                        
+                        fileName = vals[1]
+                        ####################
+                        path= os.path.abspath(self.fileName)
+                        parentPath = os.path.abspath(os.path.join(path, os.pardir))
+                        #print("warning object file path: ",os.path.abspath(os.path.join(path, os.pardir)))
+                        #####################                       
+                        self.materials[-1][5]=(self.loadTexture(parentPath+'\\'+fileName))                        
                         self.hasTex = True
                         
         if self.verbose:             
@@ -480,7 +485,7 @@ class ImportedObject:
             ix, iy, image = texImage.size[0], \
                             texImage.size[1], \
                             texImage.tobytes("raw", "RGBA", 0, -1)
-        except SystemError:
+        except :
             ix, iy, image = texImage.size[0], \
                             texImage.size[1], \
                             texImage.tobytes("raw", "RGBX", 0, -1)
