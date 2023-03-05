@@ -1,7 +1,6 @@
 from OpenGL.GL import *
 from OpenGL.GLUT import *
 from OpenGL.GLU import *
-import math, time
 import ImportObject
 
 
@@ -33,11 +32,14 @@ class star:
         self.obj.drawObject()
         glEndList()
     
+    def update(self):
+        self.rotation=(self.rotation+0.5)%360
+
     def draw(self):
         glPushMatrix()
         
         glTranslatef(self.posX,self.posY,self.posZ)
-        #glRotatef(self.rotation,0.0,1.0,0.0)
+        glRotatef(self.rotation,0.0,1.0,0.0)
         glScalef(self.sizeX,self.sizeY,self.sizeZ)
 
         glCallList(self.displayList)

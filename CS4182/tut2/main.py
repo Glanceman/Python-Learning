@@ -9,8 +9,8 @@ def draw():
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
     glLineWidth(4)
     # ---------------------------------------------------------------
-    glBegin(GL_LINES)                    
-
+    #glBegin(GL_LINES)                    
+    glBegin(GL_POLYGON)    
     glColor4f(1.0, 0.0, 0.0, 1.0)        
     glVertex3f(-0.8, 0.0, 0.0)           
     glVertex3f(0.8, 0.0, 0.0)            
