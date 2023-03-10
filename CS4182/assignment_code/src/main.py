@@ -9,7 +9,9 @@ import jeep, cone,star,ribbon
 from tools import *
 from threading import Timer
 
-windowSize = 600
+
+windowWidth = 600
+windowHeight = 600
 helpWindow = False
 helpWin = 0
 mainWin = 0
@@ -237,10 +239,11 @@ def idle():#--------------with more complex display items like turning wheel---
 
 #---------------------------------setting camera----------------------------
 def setView():
-    global eyeX, eyeY, eyeZ
+    global eyeX, eyeY, eyeZ,windowWidth , windowHeight
+    aspectRatio = float (windowWidth / windowHeight)
     glMatrixMode(GL_PROJECTION)
     glLoadIdentity()
-    gluPerspective(90, 1, 0.1, 100)
+    gluPerspective(90, aspectRatio, 0.1, 100)
     if (topView == True):
         gluLookAt(0, 10, land*gameEnlarge/2, 0, jeepObj.posY, land*gameEnlarge/2, 0, 1, 0)
     elif (behindView ==True):
@@ -307,10 +310,11 @@ def mouseWheelHandle(button, direction, x, y):
 
 def FollowView():
     if bfollowView==True:
-        global eyeX, eyeY, eyeZ
+        global eyeX, eyeY, eyeZ,windowWidth,windowHeight
+        aspectRatio = float (windowWidth / windowHeight)
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
-        gluPerspective(90, 1, 0.1, 100)
+        gluPerspective(90, float(aspectRatio), 0.1, 100)
         gluLookAt(jeepObj.posX+eyeX, jeepObj.posY +10, jeepObj.posZ+eyeZ, jeepObj.posX, jeepObj.posY, jeepObj.posZ, 0, 1, 0) 
         glMatrixMode(GL_MODELVIEW)
         glutPostRedisplay()    
@@ -376,8 +380,8 @@ def dist(pt1, pt2):
     return math.sqrt((a-x)**2 + (b-y)**2)
 
 def noReshape(newX, newY): #used to ensure program works correctly when resized
-    glutReshapeWindow(windowSize,windowSize)
-    glViewport(0, 0, windowSize,windowSize)
+    glutReshapeWindow(windowWidth,windowHeight)
+    glViewport(0, 0, windowWidth,windowHeight)
 
 #--------------------------------------------making game more complex--------
 def addCone(x,z):
@@ -542,7 +546,7 @@ def main():
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH)
     # things to do
     # change the window resolution in the game
-    glutInitWindowSize(windowSize, windowSize)
+    glutInitWindowSize(windowWidth, windowHeight)
     
     glutInitWindowPosition(0, 0)
     mainWin = glutCreateWindow('CS4182')
@@ -558,7 +562,7 @@ def main():
     glutMouseWheelFunc(mouseWheelHandle)
     glutSpecialFunc(specialKeys)
     glutKeyboardFunc(myKeyboard)
-    glutReshapeFunc(noReshape)
+    #glutReshapeFunc(noReshape)
     # things to do
     # add a menu 
     resolutionSubMenuID=glutCreateMenu(setResolutionSubMenu)
@@ -634,19 +638,31 @@ def setLightSubMenu(value):
     return 0
 
 def setResolutionSubMenu(value):
-    global windowSize
+    global windowWidth, windowHeight
     if(value==1):
-        glutLeaveGameMode()
-        windowSize=600
+        windowWidth=600
+        windowHeight=600
         noReshape(0,0)
     if(value==2):
-        glutLeaveGameMode()
-        windowSize=800
+        windowWidth=800
+        windowHeight=800
         noReshape(0,0)
     if(value==3):
-        glutLeaveGameMode()
-        windowSize=1000
+        windowWidth=1000
+        windowHeight=1000
         noReshape(0,0)
+
+    if(value==4):
+        windowWidth=1920
+        windowHeight=1080
+
+        glutFullScreen()
+        aspectRatio = float (windowWidth / windowHeight)
+        glMatrixMode(GL_PROJECTION)
+        glLoadIdentity()
+        gluPerspective(90, float(aspectRatio), 0.1, 100)
+        gluLookAt(jeepObj.posX+eyeX, jeepObj.posY +10, jeepObj.posZ+eyeZ, jeepObj.posX, jeepObj.posY, jeepObj.posZ, 0, 1, 0) 
+        glMatrixMode(GL_MODELVIEW)
 
     return 0
     

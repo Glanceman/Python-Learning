@@ -133,7 +133,7 @@ class jeep:
         glPopMatrix()
 
     def rotateWheel(self, newTheta):
-        global wheelTurn
+
         self.wheelTurn = self.wheelTurn + newTheta
         self.wheelTurn = self.wheelTurn % 360
         self.revWheelTurn = 360 - self.wheelTurn
