@@ -6,6 +6,7 @@ WindowWidth =600
 WindowHeight = 600
 
 counter = 0
+speed=0.01
 shaderProgramID=None
 
 def CompileShader(type, source):
@@ -36,7 +37,7 @@ def CreateProgram(vertexShader,fragmentShader):
 
 
 def Render():
-    global counter
+    global counter,speed
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
     
     glBegin(GL_POLYGON)
@@ -50,7 +51,7 @@ def Render():
         raise Exception ("Location is not found")
     glUniform1f(location,counter)
 
-    counter = (counter +0.01)%1000 
+    counter = (counter +speed)%1000 
     glutPostRedisplay()
     glutSwapBuffers()
     return 0
@@ -108,7 +109,20 @@ def Main():
     glUniform2f(location,WindowWidth,WindowHeight)
     glutDisplayFunc(Render)
     glutReshapeFunc(Reshape)
+
+    glutCreateMenu(setAnimationSpeedMenu)
+    glutAddMenuEntry("add Speed",1)
+    glutAddMenuEntry("reduce Speed",2)
+    glutAttachMenu(GLUT_RIGHT_BUTTON)
     glutMainLoop()
+    return 0
+
+def setAnimationSpeedMenu(value):
+    global speed
+    if(value==1):
+        speed+=0.005
+    if(value==2):
+        speed-=0.005
     return 0
 
 if __name__ == "__main__":

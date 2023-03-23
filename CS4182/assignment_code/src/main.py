@@ -74,7 +74,8 @@ ckSense = 5.0
 
 #concerned with lighting#########################!!!!!!!!!!!!!!!!##########
 applyLighting = True
-
+bPointLight = False
+bAmbientLight=False
 fov = 30.0
 attenuation = 1.0
 
@@ -621,20 +622,31 @@ def optionMenu(value):
     return 0
 
 def setLightSubMenu(value):
+    global bPointLight, bAmbientLight
     if value==1:
-        print("Point light")
-        glPushMatrix()
-        diffuseLight = [0.1, 0.1, 0.1, 1.0]  
-        lightPosition = [0, 20.0, 0, 1.0]
-        glEnable(GL_LIGHT1)  
-        glLightfv(GL_LIGHT1, GL_DIFFUSE, diffuseLight)
-        glLightfv(GL_LIGHT1, GL_POSITION, lightPosition)
-        glShadeModel(GL_SMOOTH) 
-        glPopMatrix()
+        if(bPointLight==False):
+            print("Point light")
+            glPushMatrix()
+            diffuseLight = [0.1, 0.1, 0.1, 1.0]  
+            lightPosition = [0, 20.0, 0, 1.0]
+            glEnable(GL_LIGHT1)  
+            glLightfv(GL_LIGHT1, GL_DIFFUSE, diffuseLight)
+            glLightfv(GL_LIGHT1, GL_POSITION, lightPosition)
+            glShadeModel(GL_SMOOTH) 
+            glPopMatrix()
+            bPointLight=True
+        else:
+            glDisable(GL_LIGHT1)
+            bPointLight=False
     if value ==2:
-        ambientLight = [0.2, 0.2, 0.2, 1.0]  
-        glEnable(GL_LIGHT2)
-        glLightfv(GL_LIGHT1, GL_AMBIENT, ambientLight)
+        if(bAmbientLight==False):
+            ambientLightIntensity = [0.2, 0.2, 0.2, 1.0]  
+            glEnable(GL_LIGHT2)
+            glLightfv(GL_LIGHT2, GL_AMBIENT, ambientLightIntensity)
+            bAmbientLight=True
+        else:
+            glDisable(GL_LIGHT2)
+            bAmbientLight=False
     return 0
 
 def setResolutionSubMenu(value):
