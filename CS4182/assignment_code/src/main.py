@@ -5,10 +5,13 @@ from OpenGL.GLU import *
 import math, time, random, csv, datetime
 import ImportObject
 import PIL.Image as Image
-import jeep, cone,star
+import jeep, cone,star,ribbon
 from tools import *
+from threading import Timer
 
-windowSize = 600
+
+windowWidth = 600
+windowHeight = 600
 helpWindow = False
 helpWin = 0
 mainWin = 0
@@ -34,7 +37,7 @@ allJeeps = [jeep1Obj, jeep2Obj, jeep3Obj]
 jeepNum = 0
 jeepObj = allJeeps[jeepNum]
 #personObj = person.person(10.0,10.0)
-
+speed = 0.5
 #concerned with camera
 eyeX = 0.0
 eyeY = 2.0
@@ -64,13 +67,15 @@ usedDiamond = False
 
 allcones = []
 allstars = []
+allribbons = []
 obstacleCoord = []
 rewardCoord = []
 ckSense = 5.0
 
 #concerned with lighting#########################!!!!!!!!!!!!!!!!##########
 applyLighting = True
-
+bPointLight = False
+bAmbientLight=False
 fov = 30.0
 attenuation = 1.0
 
@@ -203,7 +208,10 @@ def display():
     for cone in allcones:
         cone.draw()
     for star in allstars:
+        star.update()
         star.draw()
+    for ribbon in allribbons:
+        ribbon.draw()
     # if (usedDiamond == False):
     #     diamondObj.draw()
     
@@ -217,6 +225,7 @@ def display():
     glPopMatrix()
     #personObj.draw()
     glutSwapBuffers()
+ 
 
 def idle():#--------------with more complex display items like turning wheel---
     global tickTime, prevTime, score
@@ -231,10 +240,11 @@ def idle():#--------------with more complex display items like turning wheel---
 
 #---------------------------------setting camera----------------------------
 def setView():
-    global eyeX, eyeY, eyeZ
+    global eyeX, eyeY, eyeZ,windowWidth , windowHeight
+    aspectRatio = float (windowWidth / windowHeight)
     glMatrixMode(GL_PROJECTION)
     glLoadIdentity()
-    gluPerspective(90, 1, 0.1, 100)
+    gluPerspective(90, aspectRatio, 0.1, 100)
     if (topView == True):
         gluLookAt(0, 10, land*gameEnlarge/2, 0, jeepObj.posY, land*gameEnlarge/2, 0, 1, 0)
     elif (behindView ==True):
@@ -289,12 +299,23 @@ def motionHandle(x,y):
     #print eyeX, eyeY, eyeZ, nowX, nowY, radius, angle
     #print "getting handled"
 
+def mouseWheelHandle(button, direction, x, y):
+    global radius, eyeX, eyeZ
+    radius=radius+direction
+    radius = 4 if radius<4 else radius
+    radius = 12 if radius>12 else radius
+    eyeX = radius * math.sin(angle) 
+    eyeZ = radius * math.cos(angle)
+
+    
+
 def FollowView():
     if bfollowView==True:
-        global eyeX, eyeY, eyeZ
+        global eyeX, eyeY, eyeZ,windowWidth,windowHeight
+        aspectRatio = float (windowWidth / windowHeight)
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
-        gluPerspective(90, 1, 0.1, 100)
+        gluPerspective(90, float(aspectRatio), 0.1, 100)
         gluLookAt(jeepObj.posX+eyeX, jeepObj.posY +10, jeepObj.posZ+eyeZ, jeepObj.posX, jeepObj.posY, jeepObj.posZ, 0, 1, 0) 
         glMatrixMode(GL_MODELVIEW)
         glutPostRedisplay()    
@@ -305,16 +326,16 @@ def specialKeys(keypress, mX, mY):
     # things to do
     # this is the function to move the car
     if(keypress==GLUT_KEY_UP):
-        jeepObj.move(rot=False,val=1)
+        jeepObj.move(rot=False,val=speed)
 
     if(keypress==GLUT_KEY_DOWN):
-        jeepObj.move(rot=False,val=-1)
+        jeepObj.move(rot=False,val=-speed)
 
     if(keypress==GLUT_KEY_LEFT):
-        jeepObj.move(rot=True,val=1)
+        jeepObj.move(rot=True,val=speed)
 
     if(keypress==GLUT_KEY_RIGHT):
-        jeepObj.move(rot=True,val=-1)
+        jeepObj.move(rot=True,val=-speed)
 
     
 
@@ -360,8 +381,8 @@ def dist(pt1, pt2):
     return math.sqrt((a-x)**2 + (b-y)**2)
 
 def noReshape(newX, newY): #used to ensure program works correctly when resized
-    glutReshapeWindow(windowSize,windowSize)
-    glViewport(0, 0, windowSize,windowSize)
+    glutReshapeWindow(windowWidth,windowHeight)
+    glViewport(0, 0, windowWidth,windowHeight)
 
 #--------------------------------------------making game more complex--------
 def addCone(x,z):
@@ -372,8 +393,16 @@ def addStar(x,z):
     allstars.append(star.star(x,z))
     rewardCoord.append((x,z))
 
+def addRibbon(x,z):
+    allribbons.append(ribbon.ribbon(x,z))
+
+def resetSpeed():
+    global speed
+    speed =0.5
+    return 
+
 def collisionCheck():
-    global overReason, score, usedDiamond, countTime
+    global overReason, score, usedDiamond, countTime, speed
     for obstacle in obstacleCoord:
         if dist((jeepObj.posX, jeepObj.posZ), obstacle) <= ckSense:
             overReason = "You hit an obstacle!"
@@ -391,6 +420,13 @@ def collisionCheck():
     #     print "Diamond bonus!"
     #     countTime /= 2
     #     usedDiamond = True
+    for ribbon in allribbons:
+        if ribbon.checkOverlapped((jeepObj.posX, jeepObj.posZ)):
+            print("accelerate")
+            speed = 1
+            t= Timer(1,resetSpeed)
+            t.start()
+           
     if (jeepObj.posZ >= land*gameEnlarge):
         gameSuccess()
         
@@ -500,6 +536,8 @@ def initializeLight():
     glClearColor(0.1, 0.1, 0.1, 0.0)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~the finale!!!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
 def main():
     glutInit()
 
@@ -509,7 +547,7 @@ def main():
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH)
     # things to do
     # change the window resolution in the game
-    glutInitWindowSize(windowSize, windowSize)
+    glutInitWindowSize(windowWidth, windowHeight)
     
     glutInitWindowPosition(0, 0)
     mainWin = glutCreateWindow('CS4182')
@@ -522,19 +560,24 @@ def main():
 
     glutMouseFunc(mouseHandle)
     glutMotionFunc(motionHandle)
-
+    glutMouseWheelFunc(mouseWheelHandle)
     glutSpecialFunc(specialKeys)
     glutKeyboardFunc(myKeyboard)
-    glutReshapeFunc(noReshape)
+    #glutReshapeFunc(noReshape)
     # things to do
     # add a menu 
     resolutionSubMenuID=glutCreateMenu(setResolutionSubMenu)
     glutAddMenuEntry("600",1)
     glutAddMenuEntry("800",2)
     glutAddMenuEntry("1000",3)
+    glutAddMenuEntry("Full Screen",4)
 
-    optionMenuID = glutCreateMenu(optionMenu)
+    lightSubMenuID=glutCreateMenu(setLightSubMenu)
     glutAddMenuEntry("Point light",1)
+    glutAddMenuEntry("Ambient light",2)
+
+    glutCreateMenu(optionMenu)
+    glutAddSubMenu("SetLight",lightSubMenuID)
     glutAddSubMenu("SetResolution",resolutionSubMenuID)
     glutAttachMenu(GLUT_RIGHT_BUTTON)
 
@@ -556,12 +599,17 @@ def main():
     for i in range(starAmount):
         addStar(random.randint(-land, land), random.randint(10.0, land*gameEnlarge))
 
+    for i in range(4):
+        addRibbon(random.randint(-land+2, land-2), random.randint(10.0, land*gameEnlarge))
+
     for cone in allcones:
         cone.makeDisplayLists()
 
     for star in allstars:
         star.makeDisplayLists()
 
+    for ribbon in allribbons:
+        ribbon.makeDisplayLists()
     
     # diamondObj.makeDisplayLists()
     
@@ -571,32 +619,63 @@ def main():
     glutMainLoop()
 
 def optionMenu(value):
-    if value==1:
-        print("add light")
-        glPushMatrix()
-        ambientLight = [0.01, 0.01, 0.01, 1.0]  
-        diffuseLight = [0.1, 0.1, 0.1, 1.0]  
-        specularLight = [0.1, 0.1, 0.1, 1.0]  
-        lightPosition = [0, 20.0, 0, 1.0]
-        glEnable(GL_LIGHT1)  
-        glLightfv(GL_LIGHT1, GL_AMBIENT, ambientLight)
-        glLightfv(GL_LIGHT1, GL_DIFFUSE, diffuseLight)
-        glLightfv(GL_LIGHT1, GL_SPECULAR, specularLight)
-        glLightfv(GL_LIGHT1, GL_POSITION, lightPosition)
-        glShadeModel(GL_SMOOTH) 
-        glPopMatrix()
     return 0
+
+def setLightSubMenu(value):
+    global bPointLight, bAmbientLight
+    if value==1:
+        if(bPointLight==False):
+            print("Point light")
+            glPushMatrix()
+            diffuseLight = [0.1, 0.1, 0.1, 1.0]  
+            lightPosition = [0, 20.0, 0, 1.0]
+            glEnable(GL_LIGHT1)  
+            glLightfv(GL_LIGHT1, GL_DIFFUSE, diffuseLight)
+            glLightfv(GL_LIGHT1, GL_POSITION, lightPosition)
+            glShadeModel(GL_SMOOTH) 
+            glPopMatrix()
+            bPointLight=True
+        else:
+            glDisable(GL_LIGHT1)
+            bPointLight=False
+    if value ==2:
+        if(bAmbientLight==False):
+            ambientLightIntensity = [0.2, 0.2, 0.2, 1.0]  
+            glEnable(GL_LIGHT2)
+            glLightfv(GL_LIGHT2, GL_AMBIENT, ambientLightIntensity)
+            bAmbientLight=True
+        else:
+            glDisable(GL_LIGHT2)
+            bAmbientLight=False
+    return 0
+
 def setResolutionSubMenu(value):
-    global windowSize
+    global windowWidth, windowHeight
     if(value==1):
-        windowSize=600
+        windowWidth=600
+        windowHeight=600
         noReshape(0,0)
     if(value==2):
-        windowSize=800
+        windowWidth=800
+        windowHeight=800
         noReshape(0,0)
     if(value==3):
-        windowSize=1000
+        windowWidth=1000
+        windowHeight=1000
         noReshape(0,0)
+
+    if(value==4):
+        windowWidth=1920
+        windowHeight=1080
+
+        glutFullScreen()
+        aspectRatio = float (windowWidth / windowHeight)
+        glMatrixMode(GL_PROJECTION)
+        glLoadIdentity()
+        gluPerspective(90, float(aspectRatio), 0.1, 100)
+        gluLookAt(jeepObj.posX+eyeX, jeepObj.posY +10, jeepObj.posZ+eyeZ, jeepObj.posX, jeepObj.posY, jeepObj.posZ, 0, 1, 0) 
+        glMatrixMode(GL_MODELVIEW)
+
     return 0
     
 main()
