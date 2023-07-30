@@ -12,10 +12,18 @@ import numpy as np
 
 IS_PERSPECTIVE = True                               
 VIEW = np.array([-0.8, 0.8, -0.8, 0.8, 1.0, 20.0])  
-EYE = np.array([0.0, 0.0, 2.0])                     
+EYE = np.array([0.0, 0.0, 5.0])
+CORNERS= np.array([
+    [-1,-1,-1], #bot left
+    [1,-1,-1], # bot right
+    [-1,1,-1], # top left
+    [1,1,-1], # top right
+])
+
+
 LOOK_AT = np.array([0.0, 0.0, 0.0])                 
 EYE_UP = np.array([0.0, 1.0, 0.0])                  
-WIN_W, WIN_H = 640, 480                             
+WIN_W, WIN_H = 640, 640                             
 COUNTER= 0
 
 light0_Position = [0.0, 1.0, 1.0, 1.0]
@@ -51,43 +59,85 @@ def init():
 
 def draw():
     global IS_PERSPECTIVE, VIEW
-    global EYE, LOOK_AT, EYE_UP
+    global EYE, LOOK_AT, EYE_UP, CORNERS
     global SCALE_K
     global WIN_W, WIN_H
     global COUNTER
-    
+    NEARCLIP=1
+    FARCLIP=100
+
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-    
-   
+    EYE[0]=(EYE[0]+0.001) #move top right
+    EYE[1]=(EYE[1]+0.001)
+    ###screen direction
+    vr= (CORNERS[1]-CORNERS[0])/np.linalg.norm(CORNERS[1]-CORNERS[0])
+    vu =(CORNERS[2]-CORNERS[0])/np.linalg.norm(CORNERS[2]-CORNERS[0])
+
+    vn =(np.cross(vr,vu))/np.linalg.norm(np.cross(vr,vu))
+    #### 
+
+    ### Eye to corners
+    va=CORNERS[0]-EYE
+    vb=CORNERS[1]-EYE
+    vc=CORNERS[2]-EYE
+    ###
+
+    ### Dist between eye and screen 
+    DistTiVirtualPlane = - np.dot(va,vn) # postive val
+    ###
+
+    ### extent fo the perpendicular projection 
+    Left = np.dot(va,vr)*NEARCLIP/DistTiVirtualPlane ## move bot-left if eye move top right 
+    Right = np.dot(vb,vr)*NEARCLIP/DistTiVirtualPlane
+    Bot = np.dot(va,vu)*NEARCLIP/DistTiVirtualPlane
+    Top = np.dot(vc,vu)*NEARCLIP/DistTiVirtualPlane
+    ###
+    print("Left- "+str(Left)+" Right+ "+str(Right)+" Top+ "+str(Top)+" Bot- "+str(Bot))
+    ### Load perpendicular projection
     glMatrixMode(GL_PROJECTION)
     glLoadIdentity()
     
-    if WIN_W > WIN_H:
-        if IS_PERSPECTIVE:
-            glFrustum(VIEW[0]*WIN_W/WIN_H, VIEW[1]*WIN_W/WIN_H, VIEW[2], VIEW[3], VIEW[4], VIEW[5])
-        else:
-            glOrtho(VIEW[0]*WIN_W/WIN_H, VIEW[1]*WIN_W/WIN_H, VIEW[2], VIEW[3], VIEW[4], VIEW[5])
-    else:
-        if IS_PERSPECTIVE:
-            glFrustum(VIEW[0], VIEW[1], VIEW[2]*WIN_H/WIN_W, VIEW[3]*WIN_H/WIN_W, VIEW[4], VIEW[5])
-        else:
-            glOrtho(VIEW[0], VIEW[1], VIEW[2]*WIN_H/WIN_W, VIEW[3]*WIN_H/WIN_W, VIEW[4], VIEW[5])
-        
-  
+    # if WIN_W > WIN_H:
+    #     if IS_PERSPECTIVE:
+    #         glFrustum(VIEW[0]*WIN_W/WIN_H, VIEW[1]*WIN_W/WIN_H, VIEW[2], VIEW[3], VIEW[4], VIEW[5])
+    #     else:
+    #         glOrtho(VIEW[0]*WIN_W/WIN_H, VIEW[1]*WIN_W/WIN_H, VIEW[2], VIEW[3], VIEW[4], VIEW[5])
+    # else:
+    #     if IS_PERSPECTIVE:
+    #         glFrustum(VIEW[0], VIEW[1], VIEW[2]*WIN_H/WIN_W, VIEW[3]*WIN_H/WIN_W, VIEW[4], VIEW[5])
+    #     else:
+    #         glOrtho(VIEW[0], VIEW[1], VIEW[2]*WIN_H/WIN_W, VIEW[3]*WIN_H/WIN_W, VIEW[4], VIEW[5])
+
+    glFrustum(Left, Right, Bot, Top, NEARCLIP, FARCLIP)
+    ###
+
+    ### Rotate the projection to be non perpendicular
+    M=np.array([
+        vr[0],vu[0],vn[0],0,
+        vr[1],vu[1],vn[1],0,
+        vr[2],vu[2],vn[2],0,
+        0,0,0,1
+    ])
+    #np.reshape(M,(4,4))
+    glMultMatrixf(M)
+    ###
+
+    glTranslatef(-EYE[0],-EYE[1],-EYE[2])
+    #glTranslatef(-0,-0,-5)
     glMatrixMode(GL_MODELVIEW)
     glLoadIdentity()
         
    
     # glScale(SCALE_K[0], SCALE_K[1], SCALE_K[2])
     # glTranslatef(0.5,0.5,-0.7)
-    glRotatef(COUNTER,0,1.0,1.0)
+    #glRotatef(COUNTER,0,1.0,1.0)
 
  
-    gluLookAt(
-        EYE[0], EYE[1], EYE[2], 
-        LOOK_AT[0], LOOK_AT[1], LOOK_AT[2],
-        EYE_UP[0], EYE_UP[1], EYE_UP[2]
-    )
+    # gluLookAt(
+    #     EYE[0], EYE[1], EYE[2], 
+    #     LOOK_AT[0], LOOK_AT[1], LOOK_AT[2],
+    #     EYE_UP[0], EYE_UP[1], EYE_UP[2]
+    # )
     
     glViewport(0, 0, WIN_W, WIN_H)
     
@@ -114,7 +164,7 @@ def draw():
     
     # ---------------------------------------------------------------
     glutSwapBuffers()
-    COUNTER+=0.1
+    COUNTER=(COUNTER+0.001)%0.5
     glutPostRedisplay()
                      
 

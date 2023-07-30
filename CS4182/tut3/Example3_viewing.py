@@ -3,12 +3,22 @@ from OpenGL.GL import *
 from OpenGL.GLU import *
 from OpenGL.GLUT import *
 
+EyePosition=[0,0,2]
+
+#Plane
+BL=[-1,-1,0]
+BR=[1,-1,0]
+TL=[-1,1,0]
+TR=[1,1,0]
+
+
 def init():
     glClearColor(0.0, 0.0, 0.0, 1.0)  # sets the canvas background color
     glEnable(GL_DEPTH_TEST)  # open depth test to realize occlusion relationship
     glDepthFunc(GL_LEQUAL)  # set up depth test function
 
 def draw():
+
     # clear the screen and depth buffer
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
@@ -71,6 +81,7 @@ def draw():
     glEnd()  # end drawing the triangle
     # ---------------------------------------------------------------
     glutSwapBuffers()
+    glutPostRedisplay()
 
 
 if __name__ == "__main__":
