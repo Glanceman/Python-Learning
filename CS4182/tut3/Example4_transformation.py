@@ -12,12 +12,12 @@ import numpy as np
 
 IS_PERSPECTIVE = True                               
 VIEW = np.array([-0.8, 0.8, -0.8, 0.8, 1.0, 20.0])  
-EYE = np.array([0.0, 0.0, 5.0])
+EYE = np.array([0.0, 0.0, 0])
 CORNERS= np.array([
-    [-1,-1,-1], #bot left
-    [1,-1,-1], # bot right
-    [-1,1,-1], # top left
-    [1,1,-1], # top right
+    [-1.0,-1.0,-1.0], #bot left
+    [1.0,-1.0,-1.0], # bot right
+    [-1.0,1.0,-1.0], # top left
+    [1.0,1.0,-1.0], # top right
 ])
 
 
@@ -67,8 +67,19 @@ def draw():
     FARCLIP=100
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-    EYE[0]=(EYE[0]+0.001) #move top right
-    EYE[1]=(EYE[1]+0.001)
+    # Test With EYE
+    #EYE[0]=((EYE[0]+0.01)%1) #move top right
+    EYE[1]=(EYE[1]+0.001)%1
+    #EYE[2]=(EYE[2]-0.001)
+
+    # Test With Corner
+    # CORNERS[0]=CORNERS[0]+np.array([0.001,0,0])# Bot Left
+    # CORNERS[2]=CORNERS[2]+np.array([0.001,0,0]) # Top Left
+    # CORNERS[1]=CORNERS[1]+np.array([0.001,0,0])
+    # CORNERS[3]=CORNERS[3]+np.array([0.001,0,0]) 
+    #
+
+    print(CORNERS[0])
     ###screen direction
     vr= (CORNERS[1]-CORNERS[0])/np.linalg.norm(CORNERS[1]-CORNERS[0])
     vu =(CORNERS[2]-CORNERS[0])/np.linalg.norm(CORNERS[2]-CORNERS[0])
@@ -86,7 +97,7 @@ def draw():
     DistTiVirtualPlane = - np.dot(va,vn) # postive val
     ###
 
-    ### extent fo the perpendicular projection 
+    ### extent(virtual plane) for the perpendicular projection 
     Left = np.dot(va,vr)*NEARCLIP/DistTiVirtualPlane ## move bot-left if eye move top right 
     Right = np.dot(vb,vr)*NEARCLIP/DistTiVirtualPlane
     Bot = np.dot(va,vu)*NEARCLIP/DistTiVirtualPlane
@@ -96,7 +107,7 @@ def draw():
     ### Load perpendicular projection
     glMatrixMode(GL_PROJECTION)
     glLoadIdentity()
-    
+
     # if WIN_W > WIN_H:
     #     if IS_PERSPECTIVE:
     #         glFrustum(VIEW[0]*WIN_W/WIN_H, VIEW[1]*WIN_W/WIN_H, VIEW[2], VIEW[3], VIEW[4], VIEW[5])
@@ -118,12 +129,11 @@ def draw():
         vr[2],vu[2],vn[2],0,
         0,0,0,1
     ])
-    #np.reshape(M,(4,4))
-    glMultMatrixf(M)
+    #glMultMatrixf(M)
     ###
 
     glTranslatef(-EYE[0],-EYE[1],-EYE[2])
-    #glTranslatef(-0,-0,-5)
+    #glTranslatef(-0,-0,-0)
     glMatrixMode(GL_MODELVIEW)
     glLoadIdentity()
         
@@ -160,7 +170,10 @@ def draw():
     
  
     glColor4f(0.2, 0.6, 0.6, 1.0)
+    glPushMatrix()
+    glTranslatef(0.0,0,-1.5)
     glutSolidTeapot(0.4)
+    glPopMatrix()
     
     # ---------------------------------------------------------------
     glutSwapBuffers()
