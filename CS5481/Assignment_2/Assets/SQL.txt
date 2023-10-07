@@ -1,0 +1,77 @@
+-- create a table
+CREATE TABLE Hackers (
+  hacker_id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL,
+  Bank_acount INTEGER NOT NULL
+);
+-- insert some values
+INSERT INTO Hackers VALUES (1, 'Ryan', 123456);
+INSERT INTO Hackers VALUES (2, 'Ken', 123456);
+INSERT INTO Hackers VALUES (3, 'Joe', 12345);
+INSERT INTO Hackers VALUES (4, 'Ada', 719858);
+-- fetch some values
+SELECT * FROM Hackers;
+
+
+CREATE TABLE Tasks (
+  task_id INTEGER PRIMARY KEY,
+  task_description TEXT NOT NULL,
+  bouns INTEGER NOT NULL
+);
+-- insert some values
+INSERT INTO Tasks VALUES (1, 'run', 1);
+INSERT INTO Tasks VALUES (2, 'jump', 2);
+INSERT INTO Tasks VALUES (3, 'code', 4);
+INSERT INTO Tasks VALUES (4, 'sleep', 7);
+INSERT INTO Tasks VALUES (25, 'walk', 7);
+-- fetch some values
+SELECT * FROM Tasks;
+
+
+CREATE TABLE Submissions (
+    submission_id INTEGER PRIMARY KEY,
+    hacker_id INTEGER NOT NULL,
+    task_id INTEGER NOT NULL,
+    score INTEGER NOT NULL,
+    submission_date DATE NOT NULL
+);
+-- insert some values
+INSERT INTO Submissions VALUES (1, 1, 1,5, '2022-10-1');
+INSERT INTO Submissions VALUES (2, 1, 1,8, '2022-10-2');
+INSERT INTO Submissions VALUES (3, 1, 1,2, '2022-10-3');
+INSERT INTO Submissions VALUES (4, 1, 2,5, '2022-10-4');
+INSERT INTO Submissions VALUES (5, 2, 4,7, '2022-10-5');
+INSERT INTO Submissions VALUES (6, 2, 3,1, '2022-10-6');
+INSERT INTO Submissions VALUES (7, 3, 3,8, '2022-10-7');
+INSERT INTO Submissions VALUES (8, 4, 2,8, '2022-10-8');
+INSERT INTO Submissions VALUES (9, 4, 2,2, '2022-10-9');
+INSERT INTO Submissions VALUES (10, 4, 3,1, '2022-10-10');
+INSERT INTO Submissions VALUES (11, 1, 25,2, '2022-10-11');
+INSERT INTO Submissions VALUES (12, 1, 25,3, '2022-10-11');
+INSERT INTO Submissions VALUES (13, 2, 25,2, '2022-10-12');
+INSERT INTO Submissions VALUES (14, 3, 25,16, '2022-10-12');
+
+
+-- fetch some values
+SELECT * FROM Submissions;
+
+-- top 3 from task 25
+
+select submission_id, hacker_id, task_id, score 
+from Submissions
+where task_id=25
+order by score DESC, submission_id ;
+
+select h.hacker_id, h.name, t.bouns
+from Hackers h, Tasks t,
+    (
+        select submission_id, hacker_id, task_id, score 
+        from Submissions
+        where task_id=25
+        order by score DESC, submission_id 
+        LIMIT 3
+    ) as Top3Table
+where (
+        h.hacker_id=Top3Table.hacker_id and 
+        t.task_id = Top3Table.task_id 
+        )
