@@ -13,3 +13,6 @@ assignment_Tcp
 soundwav
 Event TimeLine Generation
 /sounddata.zip
+stanford_cars
+dataset
+my_checkpoint.pth.tar
