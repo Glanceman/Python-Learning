@@ -3,11 +3,14 @@
 ## Setup Lab Environment
 
 ```bash
-# install python3
-sudo apt install python3 python3-dev
+# install python3 (skip this step if you have installed conda)
+# sudo apt install python3 python3-dev
 
-# use bash or zsh as sh
-sudo ln -sf /bin/zsh /bin/sh
+# use bash or zsh as sh (skip this step if you use bash as the default shell)
+# zsh --version
+# sudo ln -sf /bin/zsh /bin/sh
+# or 
+# chsh -s $(which zsh)
 
 # restart the terminal and check the shell version
 echo $SHELL
@@ -26,18 +29,18 @@ sudo sysctl kernel.randomize_va_space
 # -z execstack for executable shellcode
 # -fno-stack-protector for turning off compiler protector
 gcc -Wall -g -m32 -z execstack -o call_sh_32 call_sh_32.c
-# gcc -Wall -g -z execstack -o call_sh_64 call_sh_64.c
 
-# launch a shell
+# verify the shellcode
+./call_sh_32
+sudo chown root call_sh_32 && sudo chmod 4755 call_sh_32
 ./call_sh_32
 
 # compile the vulnerable program stack
 gcc -Wall -g -m32 -z execstack -fno-stack-protector -o stack_32 stack.c
-# gcc -Wall -g -z execstack -fno-stack-protector -o stack_64 stack.c
 
 # test slack with an empty badfile
 touch badfile
-./stack
+./stack_32
 ```
 
 ## Write shellcode (optional)
@@ -67,36 +70,7 @@ continue # run remaining code
 q # quit
 ```
 
-## Attack stack
-
-```python
-/usr/bin/python3 exploit.py # generate badfile
-```
-
-Please try the following methods to see the difference.
-
-### launch attack in shell
-
 ```bash
-./stack_32
-whoami
-id
-exit
-
-# change stack into a set-uid program
+# change stack into a set-uid program if you want to get a root shell
 sudo chown root stack_32 && sudo chmod 4755 stack_32
-
-# re-run stack to see the change of the shell owner
-./stack_32
-whoami
-id
-```
-
-### launch attack in gdb
-
-```bash
-gdb -nh -q stack_32
-
-# gdb commands
-r
 ```
