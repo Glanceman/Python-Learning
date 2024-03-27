@@ -16,3 +16,5 @@ Event TimeLine Generation
 stanford_cars
 dataset
 my_checkpoint.pth.tar
+DGCNN
+/Regression-Used_Car
